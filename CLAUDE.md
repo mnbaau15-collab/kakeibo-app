@@ -5,18 +5,27 @@
 ## プロジェクト概要
 
 - アプリ名: kakeibo-app（家計簿アプリ）
-- 目的: 日々の収入・支出を記録し、集計・可視化できるようにする
-- 現在の状況: 初期セットアップ段階（技術スタック・ディレクトリ構成は未定）
-
-技術スタックやビルド・テスト手順が決まったら、以下のセクションを更新してください。
+- 目的: レシート画像を Claude API で読み取り、支出をカテゴリ別・月別に集計・可視化する
 
 ## 技術スタック
 
-- （未定）
+- npm workspaces 構成
+  - `client/`: React + Vite、グラフは Chart.js（react-chartjs-2）
+  - `server/`: Node.js + Express、`@anthropic-ai/sdk` で Claude API を呼ぶ
+- モデル: `claude-haiku-4-5`（[server/src/analyzeReceipt.js](server/src/analyzeReceipt.js)）
+- APIキーは `server/.env` の `ANTHROPIC_API_KEY`。ブラウザから直接 Claude API を呼ばない
+- データはブラウザのローカルストレージ（キー: `kakeibo.receipts`）に保存
 
 ## よく使うコマンド
 
-- （未定：開発サーバー起動、ビルド、テスト、Lint などのコマンドをここに追記する）
+- `npm install` — 依存パッケージのインストール（ルートで実行）
+- `npm run dev` — サーバー（:3001）とフロント（:5173）を同時起動
+- `npm run build` — フロントエンドをビルド
+- `npm start` — ビルド済みフロントをサーバーから配信（:3001）
+
+## 注意点
+
+- カテゴリ一覧は `server/src/categories.js` と `client/src/categories.js` の2か所にある。変更時は両方そろえる
 
 ## コーディング規約
 
