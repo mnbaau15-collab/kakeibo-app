@@ -1,13 +1,13 @@
-import "dotenv/config";
+// 環境変数の読み込みは最初に行う
+import { serverDir } from "./env.js";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import express from "express";
 import multer from "multer";
 import Anthropic from "@anthropic-ai/sdk";
 import { analyzeReceipt, ReceiptError } from "./analyzeReceipt.js";
 
 if (!process.env.ANTHROPIC_API_KEY) {
-  console.error("ANTHROPIC_API_KEY が設定されていません。server/.env を作成してください。");
+  console.error("ANTHROPIC_API_KEY が設定されていません。.env を作成してください。");
   process.exit(1);
 }
 
@@ -65,7 +65,7 @@ app.use((err, req, res, next) => {
 });
 
 // 本番用：ビルド済みのフロントエンドを配信する
-const clientDist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../client/dist");
+const clientDist = path.join(serverDir, "../client/dist");
 app.use(express.static(clientDist));
 
 app.listen(PORT, () => {
