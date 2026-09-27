@@ -14,6 +14,7 @@ const ReceiptSchema = z.object({
   is_receipt: z.boolean().describe("画像がレシート・領収書として読み取れる場合はtrue"),
   store: z.string().describe("店名。読み取れない場合は空文字"),
   date: z.string().describe("購入日（YYYY-MM-DD形式）。読み取れない場合は空文字"),
+  time: z.string().describe("購入時刻（24時間表記のHH:MM形式）。読み取れない場合は空文字"),
   items: z.array(
     z.object({
       name: z.string().describe("商品名"),

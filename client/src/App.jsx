@@ -5,6 +5,7 @@ import CategoryChart from "./components/CategoryChart.jsx";
 import MonthlyChart from "./components/MonthlyChart.jsx";
 import { useLocalStorage } from "./utils/useLocalStorage.js";
 import { flattenItems, toMonth } from "./utils/aggregate.js";
+import { findDuplicate, validateReceipt } from "./utils/validate.js";
 
 const ALL_MONTHS = "all";
 
@@ -12,18 +13,30 @@ export default function App() {
   // 登録したレシートはローカルストレージに保存する
   const [receipts, setReceipts] = useLocalStorage("kakeibo.receipts", []);
   const [month, setMonth] = useState(ALL_MONTHS);
+  // 重複の疑いがあり、登録するか確認中のレシート
+  const [pending, setPending] = useState(null);
 
-  // 読み取り結果をレシートとして追加する
-  function addReceipt(result) {
+  // 読み取り結果をレシートに変換し、重複がなければそのまま登録する
+  function handleAnalyzed(result) {
     const receipt = {
       id: crypto.randomUUID(),
       store: result.store,
       date: result.date,
+      time: result.time,
       total: result.total,
       items: result.items.map((item) => ({ ...item, id: crypto.randomUUID() })),
       createdAt: new Date().toISOString(),
     };
+    if (findDuplicate(receipt, receipts)) {
+      setPending(receipt);
+    } else {
+      addReceipt(receipt);
+    }
+  }
+
+  function addReceipt(receipt) {
     setReceipts((prev) => [receipt, ...prev]);
+    setPending(null);
     // 追加したレシートの月を表示する
     setMonth(toMonth(receipt.date));
   }
@@ -85,7 +98,23 @@ export default function App() {
       </header>
 
       <main>
-        <ReceiptUploader onAnalyzed={addReceipt} />
+        <ReceiptUploader onAnalyzed={handleAnalyzed} />
+        {pending && (
+          <section className="card pending" role="alert">
+            <h2>このレシートを登録しますか？</h2>
+            <ul className="warnings">
+              {validateReceipt(pending, receipts).map((message) => (
+                <li key={message}>{message}</li>
+              ))}
+            </ul>
+            <div className="buttons">
+              <button className="primary" onClick={() => addReceipt(pending)}>
+                登録する
+              </button>
+              <button onClick={() => setPending(null)}>登録しない</button>
+            </div>
+          </section>
+        )}
         <div className="charts">
           <CategoryChart items={visibleItems} />
           {/* 月別グラフは月の絞り込みに関係なく全期間を表示 */}
@@ -93,6 +122,7 @@ export default function App() {
         </div>
         <ReceiptList
           receipts={visibleReceipts}
+          allReceipts={receipts}
           onChangeCategory={changeCategory}
           onDeleteItem={deleteItem}
           onDeleteReceipt={deleteReceipt}

@@ -118,12 +118,47 @@ select {
   margin: 8px 0 0;
 }
 
-.warning {
+/* 警告メッセージ */
+.warnings {
   background: var(--warning-bg);
-  padding: 6px 10px;
+  padding: 6px 10px 6px 28px;
   border-radius: 6px;
   font-size: 0.85rem;
   margin: 8px 0;
+}
+
+.warnings li + li {
+  margin-top: 4px;
+}
+
+/* 重複の確認パネル */
+.pending {
+  border-color: #e0b44a;
+}
+
+.buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.buttons button {
+  font: inherit;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.buttons button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* マイナス金額の行 */
+.items tr.negative td {
+  color: var(--danger);
 }
 
 .empty,

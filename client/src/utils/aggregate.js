@@ -5,9 +5,10 @@ export function toMonth(date) {
   return date ? date.slice(0, 7) : "日付不明";
 }
 
-// 金額を「¥1,234」形式にする
+// 金額を「¥1,234」形式にする（マイナスは「-¥100」）
 export function formatYen(value) {
-  return `¥${value.toLocaleString("ja-JP")}`;
+  const sign = value < 0 ? "-" : "";
+  return `${sign}¥${Math.abs(value).toLocaleString("ja-JP")}`;
 }
 
 // レシート一覧を、日付・店名付きの商品一覧に平坦化する

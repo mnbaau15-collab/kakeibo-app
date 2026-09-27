@@ -1,10 +1,18 @@
 import { CATEGORY_NAMES, categoryColor } from "../categories.js";
 import { formatYen } from "../utils/aggregate.js";
+import { formatDateTime, validateReceipt } from "../utils/validate.js";
 
 /**
  * 登録済みレシートの商品一覧（カテゴリの変更・削除ができる）
+ * allReceipts は重複チェック用（月で絞り込む前の全レシート）
  */
-export default function ReceiptList({ receipts, onChangeCategory, onDeleteItem, onDeleteReceipt }) {
+export default function ReceiptList({
+  receipts,
+  allReceipts,
+  onChangeCategory,
+  onDeleteItem,
+  onDeleteReceipt,
+}) {
   if (receipts.length === 0) {
     return (
       <section className="card">
@@ -19,12 +27,13 @@ export default function ReceiptList({ receipts, onChangeCategory, onDeleteItem, 
       <h2>明細</h2>
       {receipts.map((receipt) => {
         const sum = receipt.items.reduce((acc, item) => acc + item.price, 0);
+        const warnings = validateReceipt(receipt, allReceipts);
         return (
           <div key={receipt.id} className="receipt">
             <div className="receipt-header">
               <div>
                 <strong>{receipt.store || "店名不明"}</strong>
-                <span className="muted">{receipt.date || "日付不明"}</span>
+                <span className="muted">{formatDateTime(receipt)}</span>
               </div>
               <div className="receipt-actions">
                 <span className="amount">{formatYen(sum)}</span>
@@ -38,11 +47,13 @@ export default function ReceiptList({ receipts, onChangeCategory, onDeleteItem, 
                 </button>
               </div>
             </div>
-            {/* 商品の合計とレシートの合計が合わない場合は注意を出す */}
-            {receipt.total != null && receipt.total !== sum && (
-              <p className="warning">
-                レシートの合計（{formatYen(receipt.total)}）と明細の合計が一致しません。
-              </p>
+            {/* マイナス金額・重複・合計の不一致などの警告 */}
+            {warnings.length > 0 && (
+              <ul className="warnings">
+                {warnings.map((message) => (
+                  <li key={message}>{message}</li>
+                ))}
+              </ul>
             )}
             <table className="items">
               <thead>
@@ -55,7 +66,7 @@ export default function ReceiptList({ receipts, onChangeCategory, onDeleteItem, 
               </thead>
               <tbody>
                 {receipt.items.map((item) => (
-                  <tr key={item.id}>
+                  <tr key={item.id} className={item.price < 0 ? "negative" : undefined}>
                     <td>{item.name}</td>
                     <td>
                       <select
